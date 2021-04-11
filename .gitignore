@@ -32,3 +32,11 @@ lerna-debug.log*
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+assets/*
+
+#ommiting the accessskeys adding them to git ignore
+src/config/aws.config.ts
+src/config/aws.config-bhargav.ts
+src/config/aws.config.json
+src/config/s3Data.json
+s3Data.json
