@@ -10,5 +10,6 @@ export const lexerDictionary = {
 
 export const athenaTypeOfDigit = {
   int: 'AT_INTEGER',
-  float: 'AT_FLOAT'
+  float: 'AT_FLOAT',
+  operation: 'AT_OPERATION'
 };
