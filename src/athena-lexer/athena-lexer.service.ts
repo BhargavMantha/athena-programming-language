@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { IllegalCharacterError } from 'src/athena-error/athena-error.service';
 import { AthenaTokenService } from 'src/athena-token/athena-token.service';
+import { IToken } from 'src/types';
 import { athenaTypeOfDigit, lexerDictionary } from './dictionary';
 
 export class AthenaLexerService {
@@ -27,7 +28,7 @@ export class AthenaLexerService {
     );
   }
   makeTokens() {
-    const tokens = [];
+    const tokens: IToken[] = [];
     while (this.self.currentCharacter !== undefined) {
       if (this.elementInChecker([...'\t '], this.self.currentCharacter)) {
         this.nextCharacter();
@@ -40,7 +41,11 @@ export class AthenaLexerService {
         tokens.push(this.makeNumbers());
         this.nextCharacter();
       } else if (lexerDictionary[this.self.currentCharacter]) {
-        tokens.push(lexerDictionary[this.self.currentCharacter]);
+        const operationToken = new AthenaTokenService(
+          athenaTypeOfDigit.operation,
+          lexerDictionary[this.self.currentCharacter]
+        ).returnToken();
+        tokens.push(operationToken);
         this.nextCharacter();
       } else {
         const char = this.self.currentCharacter;
@@ -50,7 +55,7 @@ export class AthenaLexerService {
     }
     return { elements: tokens, error: undefined };
   }
-  makeNumbers(): AthenaTokenService {
+  makeNumbers(): IToken {
     let numStr = '';
     let dotCount = 0;
     while (
@@ -72,12 +77,15 @@ export class AthenaLexerService {
       this.nextCharacter();
     }
     if (dotCount == 0) {
-      return new AthenaTokenService(athenaTypeOfDigit.int, parseInt(numStr));
+      return new AthenaTokenService(
+        athenaTypeOfDigit.int,
+        parseInt(numStr)
+      ).returnToken();
     } else {
       return new AthenaTokenService(
         athenaTypeOfDigit.float,
         parseFloat(numStr)
-      );
+      ).returnToken();
     }
   }
 }
