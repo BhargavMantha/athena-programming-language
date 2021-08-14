@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import readline, { AsyncInterface } from 'readline-promise';
 import { AthenaLexerService } from 'src/athena-lexer/athena-lexer.service';
+import { AthenaParserService } from 'src/athena-parser/athena-parser.service';
 
 @Injectable()
 export class InfinitePrompterService {
@@ -16,7 +17,15 @@ export class InfinitePrompterService {
     while (true) {
       const text = await this.rlp.questionAsync('Athena:your input=>');
       const lexer = new AthenaLexerService(text);
-      console.log(JSON.stringify(lexer.makeTokens(), null, 2));
+      const lexerOutput = lexer.makeTokens();
+      if (lexerOutput.error) {
+        console.log(JSON.stringify(lexer.makeTokens(), null, 2));
+        console.log('Some thing is wrong');
+      }
+      const tokens = lexerOutput.elements;
+      const parser = new AthenaParserService(tokens);
+      const abstractSyntaxTree = parser.parse();
+      console.log(abstractSyntaxTree);
     }
   }
 }
