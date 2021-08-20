@@ -1,6 +1,6 @@
-import { BinaryOperationOnNode } from 'src/node/binaray.operation.class';
-import { NumberNode } from 'src/node/number.node.class';
-import { IToken, ITokenNumber } from 'src/types';
+import { BinaryOperationOnNode } from '../node/binary.operation.class';
+import { NumberNode } from '../node/number.node.class';
+import { ITokenNumber } from '../types';
 interface IParseExpression {
   tokens: ITokenNumber[];
   position: number;
@@ -19,6 +19,7 @@ export class AthenaParserService {
   constructor(tokens: ITokenNumber[]) {
     this.parseExpression.tokens = tokens;
     this.nextCharacter();
+    console.log(this.parseExpression);
   }
   nextCharacter() {
     this.parseExpression.position += 1;
@@ -34,40 +35,50 @@ export class AthenaParserService {
     );
     if (isValidType) {
       this.nextCharacter();
-      return new NumberNode(token).token;
+      const numberNode = new NumberNode(token);
+      console.log('numberNode', numberNode);
+      return numberNode;
+    } else {
+      console.log('you have entered a unknown value');
     }
   };
-  term() {
+  term = () => {
     return this.commonBinaryOperation(this.factor, [
       'AT_MULTIPLY',
       'AT_DIVIDE'
     ]);
-  }
+  };
 
-  expr() {
-    return this.commonBinaryOperation(this.factor, ['AT_PLUS', 'AT_MINUS']);
-  }
-
-  commonBinaryOperation(
-    factor: Function,
-    OperationArr: mulDivideType | addSubType
-  ) {
-    let left = factor();
-    const isMulOrDivide = OperationArr.some(
-      (element) => this.parseExpression.currentCharacter.type === element
+  expr = () => {
+    return this.commonBinaryOperation(this.term, ['AT_PLUS', 'AT_MINUS']);
+  };
+  isFactorOrTerm = (operationArr) =>
+    operationArr.some(
+      (element) => this.parseExpression.currentCharacter.value === element
     );
-    while (isMulOrDivide) {
-      const operationTOPerform = this.parseExpression.currentCharacter;
+  commonBinaryOperation(
+    factorOrTerm: Function,
+    operationArr: mulDivideType | addSubType
+  ) {
+    let left = factorOrTerm();
+    let stringForm = '';
+    let count = 0;
+    while (this.isFactorOrTerm(operationArr)) {
+      const operationTOPerformToken = this.parseExpression.currentCharacter;
       this.nextCharacter();
-      const right = this.parseExpression.currentCharacter;
+      count += 1;
+      console.log('___count___', count);
+      console.log(this.parseExpression);
+      const right = factorOrTerm();
       const binaryOperationOnNode = new BinaryOperationOnNode(
         left,
-        operationTOPerform,
+        operationTOPerformToken,
         right
       );
-      left = binaryOperationOnNode;
+      left = binaryOperationOnNode.getNodeValue();
+      stringForm = binaryOperationOnNode.stringBuilder();
     }
-    return left;
+    return { left, stringForm };
   }
 
   parse() {
