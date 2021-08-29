@@ -1,3 +1,4 @@
+import { validSymbols } from 'src/athena-lexer/dictionary';
 import { BinaryOperationOnNode } from '../node/binary.operation.class';
 import { NumberNode } from '../node/number.node.class';
 import { ITokenNumber } from '../types';
@@ -6,8 +7,9 @@ interface IParseExpression {
   position: number;
   currentCharacter: ITokenNumber;
 }
-type mulDivideType = ['AT_MULTIPLY', 'AT_DIVIDE'];
-type addSubType = ['AT_PLUS', 'AT_MINUS'];
+type mulDivideType = ['AT_MULTIPLY', 'AT_DIVIDE', 'AT_OPERATION'];
+type addSubType = ['AT_PLUS', 'AT_MINUS', 'AT_OPERATION'];
+type intOrFloat = ['AT_INTEGER', 'AT_FLOAT'];
 
 export class AthenaParserService {
   parseExpression: IParseExpression = {
@@ -19,7 +21,6 @@ export class AthenaParserService {
   constructor(tokens: ITokenNumber[]) {
     this.parseExpression.tokens = tokens;
     this.nextCharacter();
-    console.log(this.parseExpression);
   }
   nextCharacter() {
     this.parseExpression.position += 1;
@@ -30,40 +31,54 @@ export class AthenaParserService {
   }
   factor = () => {
     const token = this.parseExpression.currentCharacter;
-    const isValidType = ['AT_INTEGER', 'AT_FLOAT'].some(
-      (element) => token.type === element
-    );
+    const isValidType = this.isFactorOrTerm(token, ['AT_INTEGER', 'AT_FLOAT']);
     if (isValidType) {
       this.nextCharacter();
       const numberNode = new NumberNode(token);
-      console.log('numberNode', numberNode);
-      return numberNode;
+      return numberNode.token;
     } else {
-      console.log('you have entered a unknown value');
+      console.error('you have entered a unknown type');
     }
   };
   term = () => {
     return this.commonBinaryOperation(this.factor, [
       'AT_MULTIPLY',
-      'AT_DIVIDE'
+      'AT_DIVIDE',
+      'AT_OPERATION'
     ]);
   };
 
   expr = () => {
-    return this.commonBinaryOperation(this.term, ['AT_PLUS', 'AT_MINUS']);
+    return this.commonBinaryOperation(this.term, [
+      'AT_PLUS',
+      'AT_MINUS',
+      'AT_OPERATION'
+    ]);
   };
-  isFactorOrTerm = (operationArr) =>
-    operationArr.some(
-      (element) => this.parseExpression.currentCharacter.value === element
-    );
+  isFactorOrTerm = (
+    currentCharacter: ITokenNumber,
+    operationArr: mulDivideType | addSubType | intOrFloat
+  ) =>
+    operationArr.some((element: validSymbols) => {
+      try {
+        if (this.parseExpression.currentCharacter === undefined)
+          throw 'this.parseExpression.currentCharacter is undefined';
+
+        return this.parseExpression.currentCharacter.type === element;
+      } catch (error) {
+        console.log(error);
+      }
+    });
   commonBinaryOperation(
     factorOrTerm: Function,
-    operationArr: mulDivideType | addSubType
+    operationArr: mulDivideType | addSubType | intOrFloat
   ) {
     let left = factorOrTerm();
     let stringForm = '';
     let count = 0;
-    while (this.isFactorOrTerm(operationArr)) {
+    const currentCharacter = this.parseExpression.currentCharacter;
+
+    while (this.isFactorOrTerm(currentCharacter, operationArr)) {
       const operationTOPerformToken = this.parseExpression.currentCharacter;
       this.nextCharacter();
       count += 1;
@@ -76,9 +91,9 @@ export class AthenaParserService {
         right
       );
       left = binaryOperationOnNode.getNodeValue();
-      stringForm = binaryOperationOnNode.stringBuilder();
+      stringForm += binaryOperationOnNode.stringBuilder();
     }
-    return { left, stringForm };
+    return left;
   }
 
   parse() {
