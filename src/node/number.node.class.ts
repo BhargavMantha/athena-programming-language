@@ -8,4 +8,7 @@ export class NumberNode {
   constructor(token: ITokenNumber) {
     this.initializedToken = token;
   }
+  toString() {
+    return JSON.stringify(this.token);
+  }
 }
