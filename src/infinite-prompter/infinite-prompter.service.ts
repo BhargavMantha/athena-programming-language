@@ -25,7 +25,7 @@ export class InfinitePrompterService {
       const tokens = lexerOutput.elements;
       const parser = new AthenaParserService(tokens);
       const abstractSyntaxTree = parser.parse();
-      console.log(abstractSyntaxTree);
+      console.log(JSON.stringify(abstractSyntaxTree, null, 2));
     }
   }
 }
