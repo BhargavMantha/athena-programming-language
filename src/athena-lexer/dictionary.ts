@@ -13,3 +13,11 @@ export const athenaTypeOfDigit = {
   float: 'AT_FLOAT',
   operation: 'AT_OPERATION'
 };
+export type validSymbols =
+  | 'AT_INTEGER'
+  | 'AT_FLOAT'
+  | 'AT_PLUS'
+  | 'AT_MINUS'
+  | 'AT_MULTIPLY'
+  | 'AT_DIVIDE'
+  | 'AT_OPERATION';
