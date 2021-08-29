@@ -21,6 +21,6 @@ export class BinaryOperationOnNode {
     return this.node;
   }
   stringBuilder() {
-    return `${this.node['leftNode'].value},${this.node['operationTOPerform'].value},${this.node['rightNode'].value}`;
+    return `(${this.node['leftNode'].value},${this.node['operationTOPerform'].value},${this.node['rightNode'].value})`;
   }
 }
